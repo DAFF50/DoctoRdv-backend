@@ -1,10 +1,10 @@
-# Base PHP CLI
+# 1️⃣ Base PHP
 FROM php:8.2-cli
 
-# Définir le répertoire de travail
+# 2️⃣ Définir le dossier de travail
 WORKDIR /var/www
 
-# Installer dépendances système et extensions PHP
+# 3️⃣ Installer dépendances système et extensions PHP nécessaires
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -13,27 +13,23 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-install pdo pdo_pgsql
 
-# Installer Composer proprement depuis l'image officielle
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Copier uniquement les fichiers nécessaires pour composer
-COPY composer.json composer.lock artisan ./
-
-# Installer les dépendances Laravel
-RUN composer install --no-dev --optimize-autoloader
-
-# Copier le reste du projet
+# 4️⃣ Copier tout le projet
 COPY . .
 
-# Donner les permissions correctes pour Laravel
+# 5️⃣ Installer Composer
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer
+
+# 6️⃣ Installer les dépendances Laravel
+RUN composer install --no-dev --optimize-autoloader
+
+# 7️⃣ Permissions correctes pour Laravel
 RUN chmod -R 777 storage bootstrap/cache
 
-# Optimisations Laravel
-RUN php artisan config:cache
-RUN php artisan route:cache
-
-# Exposer un port (informative)
+# 8️⃣ Exposer un port (optionnel pour Docker local)
 EXPOSE 8000
 
-# Lancer les migrations puis démarrer le serveur Laravel
-CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT}"
+# 9️⃣ Commande de démarrage
+# Utilise le port dynamique fourni par Render
+# Lance les migrations automatiquement
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
