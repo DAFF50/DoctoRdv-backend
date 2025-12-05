@@ -32,4 +32,4 @@ EXPOSE 8000
 # 9️⃣ Commande de démarrage
 # Utilise le port dynamique fourni par Render
 # Lance les migrations automatiquement
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+CMD php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
