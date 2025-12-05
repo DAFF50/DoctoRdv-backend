@@ -1,8 +1,10 @@
+# Base PHP CLI
 FROM php:8.2-cli
 
+# Définir le répertoire de travail
 WORKDIR /var/www
 
-# Installer dépendances système et PHP
+# Installer dépendances système et extensions PHP
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -14,8 +16,8 @@ RUN apt-get update && apt-get install -y \
 # Installer Composer proprement depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copier seulement les fichiers Composer pour un build optimisé
-COPY composer.json composer.lock ./
+# Copier uniquement les fichiers nécessaires pour composer
+COPY composer.json composer.lock artisan ./
 
 # Installer les dépendances Laravel
 RUN composer install --no-dev --optimize-autoloader
@@ -26,11 +28,11 @@ COPY . .
 # Donner les permissions correctes pour Laravel
 RUN chmod -R 777 storage bootstrap/cache
 
-# Optimisations Laravel (cache config et routes)
+# Optimisations Laravel
 RUN php artisan config:cache
 RUN php artisan route:cache
 
-# Port exposé (juste informatif pour Docker)
+# Exposer un port (informative)
 EXPOSE 8000
 
 # Lancer les migrations puis démarrer le serveur Laravel
