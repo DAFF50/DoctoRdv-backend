@@ -2,6 +2,7 @@ FROM php:8.2-cli
 
 WORKDIR /var/www
 
+# Installer dépendances système et PHP
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -10,25 +11,27 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-install pdo pdo_pgsql
 
-# Copier seulement les fichiers Composer d'abord
+# Installer Composer proprement depuis l'image officielle
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copier seulement les fichiers Composer pour un build optimisé
 COPY composer.json composer.lock ./
 
-# Installer les dépendances
-RUN curl -sS https://getcomposer.org/installer | php && \
-    php composer.phar install --no-dev --optimize-autoloader
+# Installer les dépendances Laravel
+RUN composer install --no-dev --optimize-autoloader
 
-# Puis copier le reste de l’application
+# Copier le reste du projet
 COPY . .
 
-# Donner les permissions
+# Donner les permissions correctes pour Laravel
 RUN chmod -R 777 storage bootstrap/cache
 
-# Optimisations Laravel
+# Optimisations Laravel (cache config et routes)
 RUN php artisan config:cache
 RUN php artisan route:cache
 
-# Port pour Render (informatif)
-EXPOSE 10000
+# Port exposé (juste informatif pour Docker)
+EXPOSE 8000
 
-# Lancer Laravel sur le port de Render
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT}
+# Lancer les migrations puis démarrer le serveur Laravel
+CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT}"
