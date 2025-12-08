@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://ton-frontend.vercel.app'],
+    'allowed_origins' => [
+        'https://docto-rdv-frontend.vercel.app',
+        'http://localhost:4200'
+    ],
 
     'allowed_origins_patterns' => [],
 
