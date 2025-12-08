@@ -26,10 +26,7 @@ RUN composer install --no-dev --optimize-autoloader
 # 7️⃣ Permissions correctes pour Laravel
 RUN chmod -R 777 storage bootstrap/cache
 
-# 8️⃣ Exposer un port (optionnel pour Docker local)
-EXPOSE 8000
-
-# 9️⃣ Commande de démarrage
-# Utilise le port dynamique fourni par Render
-# Lance les migrations automatiquement
-CMD php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# 8️⃣ Commande de démarrage
+# 👉 Lance les migrations
+# 👉 Démarre le serveur Laravel avec php -S (RECOMMANDÉ SUR RENDER)
+CMD php artisan migrate --force && php -S 0.0.0.0:$PORT -t public/
