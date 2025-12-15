@@ -43,6 +43,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('rendez-vous-patient/{id}', [RendezVousController::class, 'getRendezVousByPatient']);
         Route::post('profile/update', [AuthController::class, 'updateProfile']);
         Route::post('profile/updatePassword', [AuthController::class, 'updatePassword']);
+        Route::get('/patients/me/statistiques', [UtilisateurController::class, 'getDashboardStatsPatient']);
     });
 
     Route::middleware('role:medecin')->group(function () {

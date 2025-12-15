@@ -74,8 +74,10 @@ class RendezVousController extends Controller
                 ->isoFormat('dddd D MMMM YYYY [à] HH:mm'),
             'Medecin' => $medecin->prenom. " " .$medecin->nom. " - " .$medecin->matricule,
             'Spécialité' => $medecin->specialite->libelle,
-            'Statut' => 'Payé '
-                . ($validated['modePaiement'] == 'cabinet' ? 'au cabinet' : 'en ligne')
+            'Statut du paiement' =>
+                ($validated['modePaiement'] === 'cabinet'
+                    ? 'A payé au cabinet'
+                    : 'Effectué en ligne avec succès')
                 . ' (' . number_format($medecin->specialite?->tarif ?? 0, 0, ',', ' ') . ' FCFA)',
         ];
 

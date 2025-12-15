@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Document;
+use App\Models\DossierMedical;
+use App\Models\RendezVous;
 use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -38,6 +41,45 @@ class UtilisateurController extends Controller
         return response()->json($utilisateur, 200);
     }
 
+    public function getDashboardStatsPatient()
+    {
+        $userId = auth()->user()->id;
+
+        $prochainRdv = RendezVous::with(['medecin.specialite', 'patient'])
+            ->where('patient_id', $userId)
+            ->where('statut', 'confirme')
+            ->orderBy('dateRdv', 'asc')
+            ->orderBy('heure', 'asc')
+            ->first();
+
+        return response()->json([
+            'rendezVous' => [
+                'totalRdv' => RendezVous::where('patient_id', $userId)->count(),
+                'totalRdvAVenir' => RendezVous::where('patient_id', $userId)->where('statut', 'confirme')->count(),
+                'totalRdvTermine' => RendezVous::where('patient_id', $userId)->where('statut', 'termine')->count(),
+                'totalRdvAnnule' => RendezVous::where('patient_id', $userId)->where('statut', 'annule')->count(),
+            ],
+
+            'dossierMedicaux' => [
+                'totalDossierMedical' => DossierMedical::where('patient_id', $userId)->count(),
+                'totalDocument' => Document::whereHas('dossierMedical', function ($query) use ($userId) {
+                    $query->where('patient_id', $userId);
+                })->count(),
+                'totalAnalyse' => Document::whereHas('dossierMedical', function ($query) use ($userId) {
+                    $query->where('patient_id', $userId)->where('type', 'Analyse');
+                })->count(),
+                'totalOrdonnance' => Document::whereHas('dossierMedical', function ($query) use ($userId) {
+                    $query->where('patient_id', $userId)->where('type', 'Ordonnance');
+                })->count(),
+                'totalRadiographie' => Document::whereHas('dossierMedical', function ($query) use ($userId) {
+                    $query->where('patient_id', $userId)->where('type', 'Radiographie');
+                })->count(),
+            ],
+
+            'prochainRdv' => $prochainRdv,
+
+        ], 200);
+    }
 
     public function getMedecinPatients()
     {
